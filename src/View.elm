@@ -35,6 +35,15 @@ getAtpos: List(Int) -> Int -> Int
 getAtpos array pos = 
     Maybe.withDefault 0 (getAt pos array)
 
+btnStyles : Int -> Int -> Int -> String -> List(Attribute Msg)
+btnStyles checker idx hlightchecker fill = 
+            [
+                SA.fillOpacity "0.2"
+                , SA.cursor "pointer"
+                , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 0.5s ease-in-out")
+                else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
+            ]
+
 drawer: List(Int) -> Float -> Float -> Int -> VA.Shape -> String -> Int -> Maybe Int -> Maybe Int -> List(Svg Msg)
 drawer array hght wdth padding shape fill idx cidx hlight =
     let
@@ -57,51 +66,36 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                 case shape of 
                     VA.Box ->
                         Svg.rect
-                            [ SA.x (fromInt space)
+                            ([ SA.x (fromInt space)
                             , SA.y "0"
                             , SA.height (String.fromFloat hght)
                             , SA.width (fromFloat wdth)
                             , SA.rx "0"
                             , SA.ry "0"
-                            , SA.fillOpacity "0.2"
-                            , SA.cursor "pointer"
-                            , if (checker == idx && hlightchecker == -1) then SA.style ("stroke-width:0.2;stroke:black;fill:red; transition: fill 0.5s ease-in-out")
-                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
-                            ][]
+                            ] ++ btnStyles checker idx hlightchecker fill)[]
                     VA.Circle r -> 
                         Svg.circle
-                            [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
+                            ([ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
                             , SA.cy <| fromFloat (hght/2)
                             , SA.r <| fromInt r
-                            , SA.fillOpacity "0.2"
-                            , SA.cursor "pointer"
-                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 2s ease-in-out")
-                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
-                            ][]
+                            ] ++ btnStyles checker idx hlightchecker fill)[]
                     VA.Ellipse rx ry ->
                         Svg.ellipse
-                            [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
+                            ([ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
                             , SA.cy <| fromFloat (hght/2)
                             , SA.rx <| fromInt rx
                             , SA.ry <| fromInt ry 
-                            , SA.fillOpacity "0.2"
-                            , SA.cursor "pointer"
-                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 0.5s ease-in-out")
-                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
-                            ][]
+                            ] ++ btnStyles checker idx hlightchecker fill)[]
                     VA.Rbox rx ry ->
                         Svg.rect
-                            [ SA.x (fromInt space)
+                            ([ SA.x (fromInt space)
                             , SA.y "0"
                             , SA.height (String.fromFloat hght)
                             , SA.width (fromFloat wdth)
                             , SA.rx <| fromInt rx
                             , SA.ry <| fromInt ry
-                            , SA.fillOpacity "0.2"
-                            , SA.cursor "pointer"
-                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 0.5s ease-in-out")
-                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
-                            ][]
+                            ] ++ btnStyles checker idx hlightchecker fill)[]
+
                 , Svg.text_
                 [ SA.textAnchor "middle"
                 , SA.dominantBaseline "central"
@@ -109,14 +103,17 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                 , SA.fontSize "2px"
                 , SA.cursor "pointer"
                 ][ Svg.text <| fromInt <| val ]
+
                 , Svg.circle
                             [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
                             , SA.cy <| fromFloat (hght + 5)
-                            , SA.r <| fromFloat (if (checker == idx && hlightchecker == idx) then 1.5 else 0)
-                            , SA.style ("stroke-width:0.15;stroke:red;fill:none; transition: all 0.25s ease-in-out")
+                            , SA.r <| fromFloat 1.5
+                            , SA.strokeWidth (if (checker == idx && hlightchecker == idx) then "0.15" else "0")
+                            , SA.style ("stroke:red;fill:none; transition: stroke-width 0.25s ease-in-out")
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
                             ][]
+
                 , Svg.text_
                 [
                     SA.textAnchor "middle"
