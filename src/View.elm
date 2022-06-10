@@ -120,7 +120,6 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                     , SA.dominantBaseline "central"
                     , SA.transform ("translate(" ++ transX ++ "," ++ idxtransY ++ ")")
                     , SA.fontSize "2px"
-                    , SE.onClick <| ElemSelect(val,idx)
                     , SA.cursor "pointer"
                 ] [ Svg.text <| fromInt idx]
             ]
