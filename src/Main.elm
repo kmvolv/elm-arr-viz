@@ -37,7 +37,9 @@ update msg model =
         V.ElemSelect (val, idx) ->
             if (model.elemHigh /= Nothing && model.elemHigh /= Just idx) then (
                                                     {
-                                                        model | info = "Please deselect the highlighted value first"
+                                                        model | info = "Selected value " ++ fromInt val ++ " at index " ++ fromInt idx
+                                                        , clickedidx = Just idx
+                                                        , elemHigh = Just idx
                                                     },Cmd.none)
             else (
                 {
