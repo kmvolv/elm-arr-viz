@@ -35,14 +35,20 @@ getAtpos: List(Int) -> Int -> Int
 getAtpos array pos = 
     Maybe.withDefault 0 (getAt pos array)
 
-drawer: List(Int) -> Float -> Float -> Int -> VA.Shape -> String -> Int -> List(Svg Msg)
-drawer array hght wdth padding shape fill idx =
+drawer: List(Int) -> Float -> Float -> Int -> VA.Shape -> String -> Int -> Maybe Int -> Maybe Int -> List(Svg Msg)
+drawer array hght wdth padding shape fill idx cidx hlight =
     let
         space = (round (wdth) + padding)*idx
         transX = fromFloat (Basics.toFloat space + (wdth/2))
         transY = fromFloat (hght/2)
         idxtransY = fromFloat (hght + 5)
         val = getAtpos array idx
+        checker = case cidx of 
+                    Nothing -> -1
+                    Just x -> x
+        hlightchecker = case hlight of 
+                            Nothing -> -1
+                            Just x -> x
     in
     if idx == List.length array then []
     else 
@@ -57,18 +63,20 @@ drawer array hght wdth padding shape fill idx =
                             , SA.width (fromFloat wdth)
                             , SA.rx "0"
                             , SA.ry "0"
-                            , SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
+                            , if (checker == idx && hlightchecker == -1) then SA.style ("stroke-width:0.2;stroke:black;fill:red;")
+                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
                             ][]
                     VA.Circle r -> 
                         Svg.circle
                             [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
                             , SA.cy <| fromFloat (hght/2)
                             , SA.r <| fromInt r
-                            , SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
+                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime;")
+                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
                             ][]
                     VA.Ellipse rx ry ->
                         Svg.ellipse
@@ -76,9 +84,10 @@ drawer array hght wdth padding shape fill idx =
                             , SA.cy <| fromFloat (hght/2)
                             , SA.rx <| fromInt rx
                             , SA.ry <| fromInt ry 
-                            , SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
+                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime;")
+                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
                             ][]
                     VA.Rbox rx ry ->
                         Svg.rect
@@ -88,9 +97,10 @@ drawer array hght wdth padding shape fill idx =
                             , SA.width (fromFloat wdth)
                             , SA.rx <| fromInt rx
                             , SA.ry <| fromInt ry
-                            , SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
+                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime;")
+                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
                             ][]
                 , Svg.text_
                 [ SA.textAnchor "middle"
@@ -99,6 +109,14 @@ drawer array hght wdth padding shape fill idx =
                 , SA.fontSize "2px"
                 , SA.cursor "pointer"
                 ][ Svg.text <| fromInt <| val ]
+                , Svg.circle
+                            [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
+                            , SA.cy <| fromFloat (hght + 5)
+                            , SA.r <| fromFloat (if (checker == idx && hlightchecker == idx) then 1.5 else 0)
+                            , SA.style ("stroke-width:0.15;stroke:red;fill:none;")
+                            , SA.fillOpacity "0.2"
+                            , SA.cursor "pointer"
+                            ][]
                 , Svg.text_
                 [
                     SA.textAnchor "middle"
@@ -109,10 +127,10 @@ drawer array hght wdth padding shape fill idx =
                     , SA.cursor "pointer"
                 ] [ Svg.text <| fromInt idx]
             ]
-        :: drawer array hght wdth padding shape fill (idx+1)
+        :: drawer array hght wdth padding shape fill (idx+1) cidx hlight
 
-viewArray: List (VA.Attribute ArrConfig) -> List(Int) -> String -> Html Msg
-viewArray mods array model = 
+viewArray: List (VA.Attribute ArrConfig) -> List(Int) -> String -> Maybe Int -> Maybe Int -> Html Msg
+viewArray mods array model cidx hlight = 
     let
         config = List.foldl (\f a -> f a) defArrConfig mods
         hght = config.height
@@ -127,7 +145,7 @@ viewArray mods array model =
         , SA.height "80vh" , SA.width "100%"
     ]
     [
-        Svg.g[](drawer array hght wdth pding config.shape config.fill 0)
+        Svg.g[](drawer array hght wdth pding config.shape config.fill 0 cidx hlight)
         , Svg.text_[
             SA.textAnchor "middle"
             , SA.dominantBaseline "central"

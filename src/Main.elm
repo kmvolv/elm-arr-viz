@@ -11,20 +11,44 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import List.Extra exposing (..)
 
+
 type alias Model = 
-    String
+    {
+        info : String
+        , clickedidx : Maybe Int
+        , elemHigh : Maybe Int 
+    }
 
 array : List (Int)
 array = [43, 12, 325, 55, 23]
 
 init: () -> (Model, Cmd V.Msg)
-init _ = ("Please click on any element", Cmd.none)
+init _ = (
+            {
+                info = "Please click on any value/index"
+                , clickedidx = Nothing
+                , elemHigh = Nothing 
+            }    
+                , Cmd.none)
 
 update: V.Msg -> Model -> (Model, Cmd V.Msg)
-update msg _ =
+update msg model =
     case msg of 
         V.ElemSelect (val, idx) ->
-            ("Selected element " ++ fromInt val ++ " at index " ++ fromInt idx, Cmd.none)
+            if (model.elemHigh /= Nothing && model.elemHigh /= Just idx) then (
+                                                    {
+                                                        model | info = "Please deselect the highlighted value first"
+                                                    },Cmd.none)
+            else (
+                {
+                    info = if model.elemHigh == Nothing then "Selected value " ++ fromInt val ++ " at index " ++ fromInt idx
+                        else "Deselected value " ++ fromInt val ++ " at index " ++ fromInt idx
+                    , clickedidx = Just idx
+                    , elemHigh = case model.elemHigh of
+                                    Nothing -> Just idx
+                                    Just _ -> Nothing   
+                }
+                , Cmd.none)
 
 view: Model -> Html V.Msg
 view model = 
@@ -39,7 +63,9 @@ view model =
                 , VA.fill "teal"
             ] 
             array 
-            model
+            model.info
+            model.clickedidx
+            model.elemHigh
     ]
     
 
