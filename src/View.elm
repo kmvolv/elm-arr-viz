@@ -65,8 +65,8 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                             , SA.ry "0"
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
-                            , if (checker == idx && hlightchecker == -1) then SA.style ("stroke-width:0.2;stroke:black;fill:red;")
-                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
+                            , if (checker == idx && hlightchecker == -1) then SA.style ("stroke-width:0.2;stroke:black;fill:red; transition: fill 0.5s ease-in-out")
+                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
                             ][]
                     VA.Circle r -> 
                         Svg.circle
@@ -75,8 +75,8 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                             , SA.r <| fromInt r
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
-                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime;")
-                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
+                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 2s ease-in-out")
+                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
                             ][]
                     VA.Ellipse rx ry ->
                         Svg.ellipse
@@ -86,8 +86,8 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                             , SA.ry <| fromInt ry 
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
-                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime;")
-                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
+                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 0.5s ease-in-out")
+                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
                             ][]
                     VA.Rbox rx ry ->
                         Svg.rect
@@ -99,8 +99,8 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                             , SA.ry <| fromInt ry
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
-                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime;")
-                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ ";")
+                            , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 0.5s ease-in-out")
+                            else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
                             ][]
                 , Svg.text_
                 [ SA.textAnchor "middle"
@@ -113,7 +113,7 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                             [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
                             , SA.cy <| fromFloat (hght + 5)
                             , SA.r <| fromFloat (if (checker == idx && hlightchecker == idx) then 1.5 else 0)
-                            , SA.style ("stroke-width:0.15;stroke:red;fill:none;")
+                            , SA.style ("stroke-width:0.15;stroke:red;fill:none; transition: all 0.25s ease-in-out")
                             , SA.fillOpacity "0.2"
                             , SA.cursor "pointer"
                             ][]
