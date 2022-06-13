@@ -9,6 +9,11 @@ type Shape =
     | Ellipse Int Int 
     | Rbox Int Int
 
+type Index = 
+    Top
+    | Bottom
+    | Side
+
 height: Float -> Attribute { c | height : Float }
 height f = 
     \cc ->
@@ -33,3 +38,8 @@ fill: String -> Attribute { c | fill : String }
 fill f = 
     \cc ->
         { cc | fill = f}
+
+idx : Index -> Attribute { c | idx : Index}
+idx f = 
+    \cc ->
+        { cc | idx = f }

@@ -16,6 +16,7 @@ type alias ArrConfig =
         , padding : Int
         , shape : VA.Shape
         , fill : String
+        , idx : VA.Index
     }
 
 defArrConfig : ArrConfig
@@ -26,6 +27,7 @@ defArrConfig =
         , padding = 10
         , shape = VA.Box
         , fill = "white"
+        , idx = VA.Bottom
     }
 
 type Msg 
@@ -44,13 +46,14 @@ btnStyles checker idx hlightchecker fill =
                 else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
             ]
 
-drawer: List(Int) -> Float -> Float -> Int -> VA.Shape -> String -> Int -> Maybe Int -> Maybe Int -> List(Svg Msg)
-drawer array hght wdth padding shape fill idx cidx hlight =
+drawer: List(Int) -> Float -> Float -> Int -> VA.Shape -> String -> Int -> Maybe Int -> Maybe Int -> VA.Index -> List(Svg Msg)
+drawer array hght wdth padding shape fill idx cidx hlight idxpos =
     let
         space = (round (wdth) + padding)*idx
         transX = fromFloat (Basics.toFloat space + (wdth/2))
-        transY = fromFloat (hght/2)
-        idxtransY = fromFloat (hght + 5)
+        idxtransX = fromFloat (Basics.toFloat space + (wdth/2) + if idxpos == VA.Side then -3.5 else 0)
+        transY = fromFloat (hght/2 + if idxpos == VA.Top then 5 else 0)
+        idxtransY = fromFloat <| if idxpos == VA.Top then 2 else (hght + 3)
         val = getAtpos array idx
         checker = case cidx of 
                     Nothing -> -1
@@ -67,7 +70,7 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                     VA.Box ->
                         Svg.rect
                             ([ SA.x (fromInt space)
-                            , SA.y "0"
+                            , SA.y <| fromInt (if idxpos == VA.Top then 5 else 0)
                             , SA.height (String.fromFloat hght)
                             , SA.width (fromFloat wdth)
                             , SA.rx "0"
@@ -76,20 +79,20 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                     VA.Circle r -> 
                         Svg.circle
                             ([ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
-                            , SA.cy <| fromFloat (hght/2)
+                            , SA.cy <| fromFloat (hght/2 + if idxpos == VA.Top then 5 else 0)
                             , SA.r <| fromInt r
                             ] ++ btnStyles checker idx hlightchecker fill)[]
                     VA.Ellipse rx ry ->
                         Svg.ellipse
                             ([ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
-                            , SA.cy <| fromFloat (hght/2)
+                            , SA.cy <| fromFloat (hght/2 + if idxpos == VA.Top then 5 else 0)
                             , SA.rx <| fromInt rx
                             , SA.ry <| fromInt ry 
                             ] ++ btnStyles checker idx hlightchecker fill)[]
                     VA.Rbox rx ry ->
                         Svg.rect
                             ([ SA.x (fromInt space)
-                            , SA.y "0"
+                            , SA.y <| fromInt (if idxpos == VA.Top then 5 else 0)
                             , SA.height (String.fromFloat hght)
                             , SA.width (fromFloat wdth)
                             , SA.rx <| fromInt rx
@@ -105,8 +108,8 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                 ][ Svg.text <| fromInt <| val ]
 
                 , Svg.circle
-                            [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space))
-                            , SA.cy <| fromFloat (hght + 5)
+                            [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space + if idxpos == VA.Side then -3.5 else 0))
+                            , SA.cy <| fromFloat <| if idxpos == VA.Top then 2 else (hght + 3)
                             , SA.r <| fromFloat 1.5
                             , SA.strokeWidth (if (checker == idx && hlightchecker == idx) then "0.15" else "0")
                             , SA.style ("stroke:red;fill:none; transition: stroke-width 0.25s ease-in-out")
@@ -118,12 +121,12 @@ drawer array hght wdth padding shape fill idx cidx hlight =
                 [
                     SA.textAnchor "middle"
                     , SA.dominantBaseline "central"
-                    , SA.transform ("translate(" ++ transX ++ "," ++ idxtransY ++ ")")
+                    , SA.transform ("translate(" ++ idxtransX ++ "," ++ idxtransY ++ ")")
                     , SA.fontSize "2px"
                     , SA.cursor "pointer"
                 ] [ Svg.text <| fromInt idx]
             ]
-        :: drawer array hght wdth padding shape fill (idx+1) cidx hlight
+        :: drawer array hght wdth padding shape fill (idx+1) cidx hlight idxpos
 
 viewArray: List (VA.Attribute ArrConfig) -> List(Int) -> String -> Maybe Int -> Maybe Int -> Html Msg
 viewArray mods array model cidx hlight = 
@@ -141,12 +144,12 @@ viewArray mods array model cidx hlight =
         , SA.height "80vh" , SA.width "100%"
     ]
     [
-        Svg.g[](drawer array hght wdth pding config.shape config.fill 0 cidx hlight)
+        Svg.g[](drawer array hght wdth pding config.shape config.fill 0 cidx hlight config.idx)
         , Svg.text_[
             SA.textAnchor "middle"
             , SA.dominantBaseline "central"
             , SA.fontSize "2px"
-            , SA.transform <| "translate(" ++ String.fromInt midwdth ++ "," ++ String.fromFloat (hght+10) ++ ")"
+            , SA.transform <| "translate(" ++ String.fromInt midwdth ++ "," ++ String.fromFloat (hght+7) ++ ")"
         ]
         [Svg.text model]
             

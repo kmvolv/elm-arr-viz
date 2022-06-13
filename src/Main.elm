@@ -20,7 +20,7 @@ type alias Model =
     }
 
 array : List (Int)
-array = [43, 12, 325, 55, 23]
+array = [43, 4, 325, 55, 21]
 
 init: () -> (Model, Cmd V.Msg)
 init _ = (
@@ -63,6 +63,7 @@ view model =
                 , VA.padding 2
                 , VA.shape (VA.Rbox 3 2)
                 , VA.fill "teal"
+                , VA.idx VA.Bottom
             ] 
             array 
             model.info
