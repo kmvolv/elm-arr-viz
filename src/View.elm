@@ -31,7 +31,8 @@ defArrConfig =
     }
 
 type Msg 
-    = ElemSelect (Int, Int)
+    = ElemSelect (Int, Int, Bool)
+    | SideIdx Int
 
 getAtpos: List(Int) -> Int -> Int
 getAtpos array pos = 
@@ -42,9 +43,28 @@ btnStyles checker idx hlightchecker fill =
             [
                 SA.fillOpacity "0.2"
                 , SA.cursor "pointer"
-                , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 0.5s ease-in-out")
+                , if (checker == idx && hlightchecker == idx) then SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 0.5s ease-in-out") 
                 else SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
             ]
+
+elemStyle : Int -> String -> Int-> List(Attribute Msg)
+elemStyle idx fill hlightchecker = 
+    [
+        SA.fillOpacity "0.2"
+        , SA.cursor "pointer"
+        , if (hlightchecker == -1 || hlightchecker/=idx) then SA.style ("stroke-width:0.2;stroke:black;fill:" ++ fill ++ "; transition: fill 0.25s ease-in-out")
+        else SA.style ("stroke-width:0.2;stroke:black;fill:lime; transition: fill 0.5s ease-in-out") 
+    ]
+
+idxStyle : Int -> String -> Int -> List(Attribute Msg)
+idxStyle idx fill checker = 
+        [
+            SA.opacity "0"
+            , SA.fillOpacity "0.2"
+            , SA.cursor "pointer"
+            , if (checker == -1 || checker/=idx) then SA.style ("stroke-width:0.02;stroke:black;opacity:0;fill:" ++ fill ++ "; transition: all 0.25s ease-in-out")
+            else SA.style ("stroke-width:0.02;stroke:black;fill:lime;opacity:1; transition: all 0.5s ease-in-out") 
+        ]
 
 drawer: List(Int) -> Float -> Float -> Int -> VA.Shape -> String -> Int -> Maybe Int -> Maybe Int -> VA.Index -> List(Svg Msg)
 drawer array hght wdth padding shape fill idx cidx hlight idxpos =
@@ -62,9 +82,30 @@ drawer array hght wdth padding shape fill idx cidx hlight idxpos =
                             Nothing -> -1
                             Just x -> x
     in
-    if idx == List.length array then []
+    if idx == List.length array then
+        if idxpos == VA.Side then
+        [
+            Svg.g[ SE.onClick <| SideIdx idx ]
+                [
+                    Svg.rect
+                            ([ SA.x <| fromFloat <| 0.5 + Basics.toFloat (space-padding)
+                            , SA.y <| fromInt (if idxpos == VA.Top then 5 else 0)
+                            , SA.height (String.fromFloat hght)
+                            , SA.width "1"
+                            ] ++ idxStyle idx fill checker)[]
+                    , Svg.text_
+                        [
+                            SA.textAnchor "middle"
+                            , SA.dominantBaseline "central"
+                            , SA.transform ("translate(" ++ idxtransX ++ "," ++ idxtransY ++ ")")
+                            , SA.fontSize "2px"
+                            , SA.cursor "pointer"
+                        ] [ Svg.text <| fromInt idx]   
+                ]
+        ]
+        else []
     else 
-        Svg.g[ SE.onClick <| ElemSelect(val,idx) ]
+        Svg.g[ SE.onClick <| if idxpos /= VA.Side then ElemSelect(val,idx,False) else ElemSelect(val,idx,True) ]
             [
                 case shape of 
                     VA.Box ->
@@ -97,7 +138,7 @@ drawer array hght wdth padding shape fill idx cidx hlight idxpos =
                             , SA.width (fromFloat wdth)
                             , SA.rx <| fromInt rx
                             , SA.ry <| fromInt ry
-                            ] ++ btnStyles checker idx hlightchecker fill)[]
+                            ] ++ if idxpos == VA.Side then elemStyle idx fill hlightchecker else btnStyles checker idx hlightchecker fill)[]
 
                 , Svg.text_
                 [ SA.textAnchor "middle"
@@ -106,27 +147,52 @@ drawer array hght wdth padding shape fill idx cidx hlight idxpos =
                 , SA.fontSize "2px"
                 , SA.cursor "pointer"
                 ][ Svg.text <| fromInt <| val ]
-
-                , Svg.circle
-                            [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space + if idxpos == VA.Side then -3.5 else 0))
-                            , SA.cy <| fromFloat <| if idxpos == VA.Top then 2 else (hght + 3)
-                            , SA.r <| fromFloat 1.5
-                            , SA.strokeWidth (if (checker == idx && hlightchecker == idx) then "0.15" else "0")
-                            , SA.style ("stroke:red;fill:none; transition: stroke-width 0.25s ease-in-out")
-                            , SA.fillOpacity "0.2"
-                            , SA.cursor "pointer"
-                            ][]
-
-                , Svg.text_
-                [
-                    SA.textAnchor "middle"
-                    , SA.dominantBaseline "central"
-                    , SA.transform ("translate(" ++ idxtransX ++ "," ++ idxtransY ++ ")")
-                    , SA.fontSize "2px"
-                    , SA.cursor "pointer"
-                ] [ Svg.text <| fromInt idx]
             ]
-        :: drawer array hght wdth padding shape fill (idx+1) cidx hlight idxpos
+                :: if idxpos /= VA.Side then 
+                    [
+                        Svg.g [SE.onClick <| ElemSelect (val,idx,False)]
+                        [
+                            Svg.circle
+                                [ SA.cx (fromFloat (wdth/2 + Basics.toFloat space + if idxpos == VA.Side then -3.5 else 0))
+                                , SA.cy <| fromFloat <| if idxpos == VA.Top then 2 else (hght + 3)
+                                , SA.r <| fromFloat 1.5
+                                , SA.strokeWidth (if (checker == idx && hlightchecker == idx) then "0.15" else "0")
+                                , SA.style ("stroke:red;fill:none; transition: stroke-width 0.25s ease-in-out")
+                                , SA.fillOpacity "0.2"
+                                , SA.cursor "pointer"
+                                ][]
+                            , Svg.text_
+                            [
+                                SA.textAnchor "middle"
+                                , SA.dominantBaseline "central"
+                                , SA.transform ("translate(" ++ idxtransX ++ "," ++ idxtransY ++ ")")
+                                , SA.fontSize "2px"
+                                , SA.cursor "pointer"
+                            ] [ Svg.text <| fromInt idx]
+                        ]
+                    ]
+                    ++ drawer array hght wdth padding shape fill (idx+1) cidx hlight idxpos
+                else
+                    [
+                        Svg.g[ SE.onClick <| SideIdx idx ]
+                            [
+                                Svg.rect
+                                        ([ SA.x <| fromFloat <| 0.5 + Basics.toFloat (space-padding)
+                                        , SA.y <| fromInt (if idxpos == VA.Top then 5 else 0)
+                                        , SA.height (String.fromFloat hght)
+                                        , SA.width "1"
+                                        ]  ++ idxStyle idx fill checker)[]
+                                , Svg.text_
+                                    [
+                                        SA.textAnchor "middle"
+                                        , SA.dominantBaseline "central"
+                                        , SA.transform ("translate(" ++ idxtransX ++ "," ++ idxtransY ++ ")")
+                                        , SA.fontSize "2px"
+                                        , SA.cursor "pointer"
+                                    ] [ Svg.text <| fromInt idx]   
+                            ]
+                    ]    
+                    ++ drawer array hght wdth padding shape fill (idx+1) cidx hlight idxpos
 
 viewArray: List (VA.Attribute ArrConfig) -> List(Int) -> String -> Maybe Int -> Maybe Int -> Html Msg
 viewArray mods array model cidx hlight = 

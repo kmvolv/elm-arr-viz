@@ -34,23 +34,42 @@ init _ = (
 update: V.Msg -> Model -> (Model, Cmd V.Msg)
 update msg model =
     case msg of 
-        V.ElemSelect (val, idx) ->
+        V.ElemSelect (val, idx, onlyElem) ->
             if (model.elemHigh /= Nothing && model.elemHigh /= Just idx) then (
                                                     {
-                                                        model | info = "Selected value " ++ fromInt val ++ " at index " ++ fromInt idx
-                                                        , clickedidx = Just idx
+                                                        model | info = if onlyElem == False then "Selected value " ++ fromInt val ++ " at index " ++ fromInt idx else "Selected value " ++ fromInt val
+                                                        , clickedidx = if onlyElem then Nothing else Just idx
                                                         , elemHigh = Just idx
                                                     },Cmd.none)
             else (
                 {
-                    info = if model.elemHigh == Nothing then "Selected value " ++ fromInt val ++ " at index " ++ fromInt idx
-                        else "Deselected value " ++ fromInt val ++ " at index " ++ fromInt idx
-                    , clickedidx = Just idx
+                    info = if model.elemHigh == Nothing then if onlyElem == False then "Selected value " ++ fromInt val ++ " at index " ++ fromInt idx else "Selected value " ++ fromInt val
+                        else if onlyElem then "Deselected value " ++ fromInt val else "Deselected value " ++ fromInt val ++ " at index " ++ fromInt idx
+                    , clickedidx = if onlyElem then Nothing else Just idx
                     , elemHigh = case model.elemHigh of
                                     Nothing -> Just idx
                                     Just _ -> Nothing   
                 }
                 , Cmd.none)
+        V.SideIdx idx ->
+            if (model.clickedidx /= Nothing && model.clickedidx /= Just idx) then (
+                                                    {
+                                                        model | info = " Selected index " ++ fromInt idx
+                                                        , clickedidx = Just idx
+                                                        , elemHigh = Nothing
+                                                    },Cmd.none)
+            else (
+                {
+                    info = if model.clickedidx == Nothing then "Selected index " ++ fromInt idx
+                        else "Deselected index " ++ fromInt idx
+                    , clickedidx = case model.clickedidx of 
+                                        Nothing -> Just idx
+                                        Just _ -> Nothing
+                    , elemHigh = Nothing
+                }
+                , Cmd.none)
+
+
 
 view: Model -> Html V.Msg
 view model = 
@@ -63,7 +82,7 @@ view model =
                 , VA.padding 2
                 , VA.shape (VA.Rbox 3 2)
                 , VA.fill "teal"
-                , VA.idx VA.Bottom
+                , VA.idx VA.Side
             ] 
             array 
             model.info
